@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kuis: Negara, Ibukota, Geografis & Benua</title>
+    <style>
+        /* CSS - Desain Tampilan */
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            color: #333;
+        }
+
+        .container {
+            background-color: white;
+            width: 90%;
+            max-width: 500px;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            text-align: center;
+        }
+
+        h1 {
+            color: #2a5298;
+            margin-bottom: 10px;
+            font-size: 22px;
+        }
+
+        .header-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            font-weight: bold;
+            color: #555;
+            font-size: 14px;
+        }
+
+        .question-box {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 25px;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .options-grid {
+            display: flex; /* Ubah dari grid ke flex agar lebih fleksibel */
+            flex-direction: column; /* Tombol menyusun ke bawah */
+            gap: 10px;
+        }
+
+        button.option-btn {
+            background-color: #f0f2f5;
+            border: 2px solid #dfe1e5;
+            border-radius: 10px;
+            padding: 15px;
+            font-size: 15px; /* Sedikit kecilkan font agar muat di HP */
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #333;
+            width: 100%; /* Tombol memenuhi lebar layar */
+            text-align: left; /* Teks rata kiri agar nyaman dibaca */
+        }
+
+        button.option-btn:hover:not([disabled]) {
+            background-color: #e2e6ea;
+            transform: translateY(-2px);
+        }
+
+        /* Warna untuk hasil jawaban */
+        button.correct {
+            background-color: #28a745 !important;
+            color: white !important;
+            border-color: #28a745 !important;
+        }
+
+        button.wrong {
+            background-color: #dc3545 !important;
+            color: white !important;
+            border-color: #dc3545 !important;
+        }
+
+        #next-btn, #restart-btn {
+            background-color: #2a5298;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 25px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 20px;
+            display: none; /* Tersembunyi dulu */
+            width: 100%; /* Lebar penuh di HP */
+        }
+
+        #next-btn:hover, #restart-btn:hover {
+            background-color: #1e3c72;
+        }
+
+        /* Layar Hasil Akhir */
+        #result-screen {
+            display: none;
+        }
+
+        .score-display {
+            font-size: 40px;
+            font-weight: bold;
+            color: #28a745;
+            margin: 20px 0;
+        }
+
+        .icon {
+            font-size: 40px;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        /* Tombol Mulai (Agar keluar di tengah) */
+        #start-btn {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 30px;
+            font-size: 18px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+
+        /* Sembunyikan elemen game di awal */
+        .hide {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- Tampilan Awal -->
+        <div id="start-screen">
+            <span class="icon">🌏</span>
+            <h1>Kuis Pengetahuan Dunia</h1>
+            <p>Tebak Negara, Ibukota, Geografis, dan Benua</p>
+            <p>Total: 30 Level</p>
+            <button id="start-btn" onclick="startGame()">Mulai Kuis</button>
+        </div>
+
+        <!-- Tampilan Pertanyaan -->
+        <div id="quiz-screen" class="hide">
+            <div class="header-info">
+                <span id="level-indicator">Level: 1/30</span>
+                <span id="score-indicator">Skor: 0</span>
+            </div>
+            
+            <div class="question-box" id="question-text">
+                Pertanyaan akan muncul di sini...
+            </div>
+
+            <div class="options-grid" id="option-buttons">
+                <!-- Tombol opsi akan dibuat lewat JS -->
+            </div>
+
+            <button id="next-btn" onclick="nextQuestion()">Soal Berikutnya ➡️</button>
+        </div>
+
+        <!-- Tampilan Hasil Akhir -->
+        <div id="result-screen">
+            <span class="icon">🏆</span>
+            <h2>Permainan Selesai!</h2>
+            <p>Skor Akhir Anda:</p>
+            <div class="score-display" id="final-score">0</div>
+            <p id="feedback-text">Kerja bagus!</p>
+            <button id="restart-btn" onclick="restartGame()">Main Lagi</button>
+        </div>
+    </div>
+
+    <script>
+        // --- DATA SOAL (30 Pertanyaan) ---
+        const questions = [
+            // 1-10: Negara & Ibukota
+            { question: "Ibukota Negara Indonesia adalah?", options: ["Surabaya", "Jakarta", "Bandung", "Medan"], answer: "Jakarta" },
+            { question: "Ibukota Negara Jepang adalah?", options: ["Osaka", "Tokyo", "Kyoto", "Hiroshima"], answer: "Tokyo" },
+            { question: "Negara dengan Ibukota Canberra adalah?", options: ["Selandia Baru", "Australia", "Kanada", "Inggris"], answer: "Australia" },
+            { question: "Ibukota Prancis adalah?", options: ["Lyon", "Paris", "Marseille", "Nice"], answer: "Paris" },
+            { question: "Ibukota Negara Jerman adalah?", options: ["Munich", "Frankfurt", "Berlin", "Hamburg"], answer: "Berlin" },
+            { question: "Negara mana yang ibukotanya Riyadh?", options: ["Iran", "Irak", "Arab Saudi", "Mesir"], answer: "Arab Saudi" },
+            { question: "Ibukota Brasil adalah?", options: ["Rio de Janeiro", "Sao Paulo", "Brasilia", "Salvador"], answer: "Brasilia" },
+            { question: "Negara terbesar di dunia (luas wilayah) adalah?", options: ["Kanada", "Cina", "Rusia", "Amerika Serikat"], answer: "Rusia" },
+            { question: "Ibukota Malaysia adalah?", options: ["Johor Bahru", "Kuala Lumpur", "Penang", "Malaka"], answer: "Kuala Lumpur" },
+            { question: "Ibukota Italia adalah?", options: ["Milan", "Venice", "Roma", "Naples"], answer: "Roma" },
+
+            // 11-20: Geografis (Pegunungan, Sungai, Laut)
+            { question: "Gunung tertinggi di dunia adalah?", options: ["K2", "Mount Everest", "Kilimanjaro", "Fuji"], answer: "Mount Everest" },
+            { question: "Sungai terpanjang di dunia adalah?", options: ["Amazon", "Nile", "Yangtze", "Mississippi"], answer: "Nile" },
+            { question: "Gurun terbesar di dunia adalah?", options: ["Gobi", "Sahara", "Kalahari", "Arabia"], answer: "Sahara" },
+            { question: "Danau terbesar di dunia adalah?", options: ["Superior", "Victoria", "Kaspia", "Baikal"], answer: "Kaspia" },
+            { question: "Pegunungan yang ada di Eropa adalah?", options: ["Alps", "Himalaya", "Rocky", "Andes"], answer: "Alps" },
+            { question: "Samudra terbesar adalah?", options: ["Atlantik", "India", "Pasifik", "Arktik"], answer: "Pasifik" },
+            { question: "Pulau terbesar di dunia adalah?", options: ["Greenland", "Kalimantan", "Madagaskar", "Borneo"], answer: "Greenland" },
+            { question: "Air terjun tertinggi adalah?", options: ["Niagara", "Victoria", "Angel", "Iguazu"], answer: "Angel" },
+            { question: "Negara dengan banyak volcano (Gunung Api) adalah?", options: ["Jepang", "Mesir", "Prancis", "Kanada"], answer: "Jepang" },
+            { question: "Selat yang memisahkan Malaysia dan Indonesia adalah?", options: ["Malaka", "Sunda", "Lombok", "Karimata"], answer: "Malaka" },
+
+            // 21-30: Benua & Gabungan
+            { question: "Benua terpadat penduduknya adalah?", options: ["Afrika", "Eropa", "Asia", "Amerika"], answer: "Asia" },
+            { question: "Benua terkecil adalah?", options: ["Antartika", "Eropa", "Australia", "Amerika Selatan"], answer: "Australia" },
+            { question: "Ibukota Inggris (UK) adalah?", options: ["Manchester", "Edinburgh", "London", "Birmingham"], answer: "London" },
+            { question: "Negara di benua Afrika yang berbatasan dengan mediterania adalah?", options: ["Afrika Selatan", "Mesir", "Nigeria", "Kongo"], answer: "Mesir" },
+            { question: "Benua yang memiliki kutub utara adalah?", options: ["Antartika", "Arktik", "Eropa", "Amerika"], answer: "Arktik" },
+            { question: "Sungai di Indonesia yang terbesar adalah?", options: ["Mahakam", "kapuas", "Ciliwung", "Bengawan Solo"], answer: "kapuas" },
+            { question: "Wilayah di Indonesia yang dijuluki 'Pulau Seribu Masjid' adalah?", options: ["Jawa", "Kalimantan", "Sumatera", "Sulawesi"], answer: "Sumatera" },
+            { question: "Gunung tertinggi di Asia Tenggara adalah?", options: ["Kinabalu", "Toba", "Kerinci", "Rinjani"], answer: "Kinabalu" },
+            { question: "Benua tempat negara Mesir berada adalah?", options: ["Asia", "Afrika", "Eropa", "Arab"], answer: "Afrika" },
+            { question: "Apa ibukota India?", options: ["Mumbai", "New Delhi", "Kolkata", "Chennai"], answer: "New Delhi" }
+        ];
+
+        // --- LOGIKA PERMAINAN ---
+        let currentLevel = 0;
+        let score = 0;
+
+        const startScreen = document.getElementById('start-screen');
+        const quizScreen = document.getElementById('quiz-screen');
+        const resultScreen = document.getElementById('result-screen');
+        
+        const questionText = document.getElementById('question-text');
+        const optionButtonsElement = document.getElementById('option-buttons');
+        const nextButton = document.getElementById('next-btn');
+        
+        const levelIndicator = document.getElementById('level-indicator');
+        const scoreIndicator = document.getElementById('score-indicator');
+        const finalScoreElement = document.getElementById('final-score');
+        const feedbackText = document.getElementById('feedback-text');
+
+        function startGame() {
+            startScreen.style.display = 'none';
+            quizScreen.style.display = 'block';
+            currentLevel = 0;
+            score = 0;
+            setNextQuestion();
+        }
+
+        function setNextQuestion() {
+            resetState();
+            if (currentLevel < questions.length) {
+                showQuestion(questions[currentLevel]);
+            } else {
+                endGame();
+            }
+        }
+
+        function showQuestion(questionData) {
+            // Update level dan skor
+            levelIndicator.innerText = `Level: ${currentLevel + 1}/${questions.length}`;
+            scoreIndicator.innerText = `Skor: ${score}`;
+            
+            // Tampilkan pertanyaan
+            questionText.innerText = questionData.question;
+
+            // Acak opsi jawaban (opsional, tapi bikin adil)
+            // Disini saya langsung tampilkan sesuai array, kalau mau diacak bisa ditambah fungsi shuffle
+            
+            questionData.options.forEach(option => {
+                const button = document.createElement('button');
+                button.innerText = option;
+                button.classList.add('option-btn');
+                
+                // Simpan jawaban benar di atribut data
+                if (option === questionData.answer) {
+                    button.dataset.correct = true;
+                }
+                
+                button.addEventListener('click', selectAnswer);
+                optionButtonsElement.appendChild(button);
+            });
+        }
+
+        function resetState() {
+            nextButton.style.display = 'none';
+            while (optionButtonsElement.firstChild) {
+                optionButtonsElement.removeChild(optionButtonsElement.firstChild);
+            }
+        }
+
+        function selectAnswer(e) {
+            const selectedButton = e.target;
+            const isCorrect = selectedButton.dataset.correct === "true";
+
+            if (isCorrect) {
+                selectedButton.classList.add('correct');
+                score += 10; // Tambah skor 10 kalau benar
+            } else {
+                selectedButton.classList.add('wrong');
+            }
+
+            // Tandai semua tombol dan非aktifkan klik
+            Array.from(optionButtonsElement.children).forEach(button => {
+                if (button.dataset.correct === "true") {
+                    button.classList.add('correct'); // Tampilkan jawaban hijau yang benar
+                }
+                button.disabled = true; // Jangan bisa diklik lagi
+            });
+
+            // Update skor indikator sebelum pindah
+            scoreIndicator.innerText = `Skor: ${score}`;
+            
+            // Tampilkan tombol lanjut
+            nextButton.style.display = 'block';
+        }
+
+        function nextQuestion() {
+            currentLevel++;
+            setNextQuestion();
+        }
+
+        function endGame() {
+            quizScreen.style.display = 'none';
+            resultScreen.style.display = 'block';
+            finalScoreElement.innerText = `${score} / ${questions.length * 10}`;
+            
+            // Feedback teks
+            const percent = (score / (questions.length * 10)) * 100;
+            if (percent === 100) {
+                feedbackText.innerText = "Sempurna! Kamu Jenius! 🏆";
+            } else if (percent >= 70) {
+                feedbackText.innerText = "Kerja bagus! 🤩";
+            } else if (percent >= 40) {
+                feedbackText.innerText = "Coba lagi ya, tetap semangat! 🙂";
+            } else {
+                feedbackText.innerText = "Yuk, belajar lagi! Coba lagi. 😅";
+            }
+        }
+
+        function restartGame() {
+            resultScreen.style.display = 'none';
+            startGame();
+        }
+    </script>
+</body>
+</html>
